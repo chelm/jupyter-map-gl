@@ -1,0 +1,10 @@
+Metadata-Version: 1.0
+Name: jupyter-map-gl
+Version: 0.1
+Summary: A wrapper around react-map-gl components for use in jupyter notebooks
+Home-page: https://bitbucket.com/timbr-io/jupyter-map-gl
+Author: Chris Helm
+Author-email: chelm@timbr.io
+License: MIT
+Description: UNKNOWN
+Platform: UNKNOWN
