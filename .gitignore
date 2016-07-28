@@ -1,3 +1,4 @@
 js/node_modules
 *.pyc
 **/*.pyc
+jupyter_map_gl.egg-info
