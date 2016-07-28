@@ -1,9 +1,0 @@
-setup.py
-jupyter_map_gl/__init__.py
-jupyter_map_gl/heatmap.py
-jupyter_map_gl.egg-info/PKG-INFO
-jupyter_map_gl.egg-info/SOURCES.txt
-jupyter_map_gl.egg-info/dependency_links.txt
-jupyter_map_gl.egg-info/not-zip-safe
-jupyter_map_gl.egg-info/requires.txt
-jupyter_map_gl.egg-info/top_level.txt
