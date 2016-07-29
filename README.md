@@ -4,7 +4,7 @@ A little ReactJS component wrapper around https://github.com/uber/react-map-gl f
 
 Showcases the use of: https://github.com/timbr-io/jupyter-react-js and https://github.com/timbr-io/jupyter-react. 
 
-<img src="./resources/React_Mapbox_GL.png" />
+<img src="./resources/map.gif" />
 
 Example usage 
 
@@ -18,5 +18,6 @@ glmap = GlMap(props={'width':900,
                  'geojson': geojson, 
                  'mapboxApiAccessToken': 'YOUR_MB_TOKEN'
                 })
+
 display(glmap)
 ```
