@@ -4,6 +4,8 @@ A little ReactJS component wrapper around https://github.com/uber/react-map-gl f
 
 Showcases the use of: https://github.com/timbr-io/jupyter-react-js and https://github.com/timbr-io/jupyter-react. 
 
+<img src="./resources/React_Mapbox_GL.png" />
+
 Example usage 
 
 ```python
