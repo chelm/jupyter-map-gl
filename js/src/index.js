@@ -1,3 +1,14 @@
+if (window.require) {
+    window.require.config({
+        map: {
+            "*" : {
+                "react": "https://fb.me/react-15.2.1.min.js",
+                "react-dom": "https://fb.me/react-dom-15.2.1.min.js"
+            }
+        }
+    });
+}
+
 import JupyterReact from 'jupyter-react-js';
 import components from './components'; 
 import dispatcher from './components/dispatcher';
@@ -16,7 +27,7 @@ function load_ipython_extension () {
   requirejs([
       "base/js/namespace",
       "base/js/events",
-  ], function( Jupyter, events, React, ReactDom ) {
+  ], function( Jupyter, events ) {
       JupyterReact.init( Jupyter, events, 'react.gl', { components, on_update } );
   });
 }

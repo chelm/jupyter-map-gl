@@ -44,7 +44,7 @@ define(["react"], function(__WEBPACK_EXTERNAL_MODULE_7__) { return /******/ (fun
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	"use strict";
 
 	var _jupyterReactJs = __webpack_require__(1);
 
@@ -60,24 +60,35 @@ define(["react"], function(__WEBPACK_EXTERNAL_MODULE_7__) { return /******/ (fun
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+	if (window.require) {
+	    window.require.config({
+	        map: {
+	            "*": {
+	                "react": "https://fb.me/react-15.2.1.min.js",
+	                "react-dom": "https://fb.me/react-dom-15.2.1.min.js"
+	            }
+	        }
+	    });
+	}
+
 	// An option component update method passed to every component
 	// when an update message is received over the comm, 
 	// components will dispatch an event to every other component 
 	var on_update = function on_update(module, props) {
-	  _dispatcher2.default.dispatch({
-	    actionType: module.toLowerCase() + '_update',
-	    data: props
-	  });
+	    _dispatcher2.default.dispatch({
+	        actionType: module.toLowerCase() + '_update',
+	        data: props
+	    });
 	};
 
 	function load_ipython_extension() {
-	  requirejs(["base/js/namespace", "base/js/events"], function (Jupyter, events, React, ReactDom) {
-	    _jupyterReactJs2.default.init(Jupyter, events, 'react.gl', { components: _components2.default, on_update: on_update });
-	  });
+	    requirejs(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
+	        _jupyterReactJs2.default.init(Jupyter, events, 'react.gl', { components: _components2.default, on_update: on_update });
+	    });
 	}
 
 	module.exports = {
-	  load_ipython_extension: load_ipython_extension
+	    load_ipython_extension: load_ipython_extension
 	};
 
 /***/ },
@@ -111,8 +122,8 @@ define(["react"], function(__WEBPACK_EXTERNAL_MODULE_7__) { return /******/ (fun
 	         */
 	        var handle_kernel = function(Jupyter, kernel) {
 	          //if ( kernel.comm_manager && !kernel.component_manager ) {
-	          var Component = ReactComponent( component_options );
-	          kernel.component_manager = new Manager( comm_target, kernel, Component );
+	            var Component = ReactComponent( component_options );
+	            kernel.component_manager = new Manager( comm_target, kernel, Component );
 	          //}
 	        };
 
@@ -121,8 +132,12 @@ define(["react"], function(__WEBPACK_EXTERNAL_MODULE_7__) { return /******/ (fun
 	         */
 	        // TODO need to handle clear out output calls
 	        var handle_cell = function(cell) {
-	            if (cell.cell_type==='code') {
-	                cell.react_dom = new Area( cell );
+	            if ( cell.cell_type === 'code' ) {
+	                if ( !cell.react_dom ) {
+	                    cell.react_dom = new Area( cell );
+	                } else if ( cell.react_dom.clear !== undefined ) {
+	                    cell.react_dom.clear();
+	                }
 	            }
 	        };
 
@@ -147,8 +162,8 @@ define(["react"], function(__WEBPACK_EXTERNAL_MODULE_7__) { return /******/ (fun
 	        });
 
 	        events.on( 'delete.Cell', function( event, data ) {
-	            if ( data.cell && data.cell.widgetarea ) {
-	                data.cell.react_dom.remove();
+	            if ( data.cell && data.cell.react_dom ) {
+	                data.cell.react_dom.clear();
 	            }
 	        });
 	    });
@@ -195,6 +210,12 @@ define(["react"], function(__WEBPACK_EXTERNAL_MODULE_7__) { return /******/ (fun
 	    }
 	};
 
+	Area.prototype.clear = function(){ 
+	    this.subarea.innerHTML = '';
+	};
+
+
+
 	module.exports = Area;
 
 
@@ -214,7 +235,6 @@ define(["react"], function(__WEBPACK_EXTERNAL_MODULE_7__) { return /******/ (fun
 	};
 
 	module.exports = Manager;
-
 
 /***/ },
 /* 4 */
@@ -263,7 +283,14 @@ define(["react"], function(__WEBPACK_EXTERNAL_MODULE_7__) { return /******/ (fun
 	      } else {
 	        display = _outputAreaElement(msg);
 	      }
+	      
+	      var cell = _getMsgCell( msg );
 	      ReactDom.render(element, display);
+	    };
+
+	    var _getMsgCell = function( msg ) {
+	      var msg_id = msg.parent_header.msg_id;
+	      return Jupyter.notebook.get_msg_cell( msg_id );
 	    };
 
 	    // Create React Elements from components and props 
@@ -273,8 +300,7 @@ define(["react"], function(__WEBPACK_EXTERNAL_MODULE_7__) { return /******/ (fun
 
 	    // Get the DOM Element to render to
 	    var _outputAreaElement = function (msg) {
-	      var msg_id = msg.parent_header.msg_id;
-	      var cell = Jupyter.notebook.get_msg_cell(msg_id);
+	      var cell = _getMsgCell( msg );
 	      return cell.react_dom.subarea;
 	    };
 
