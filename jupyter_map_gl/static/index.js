@@ -398,16 +398,16 @@ define(["react"], function(__WEBPACK_EXTERNAL_MODULE_7__) { return /******/ (fun
 	  return desc;
 	}
 
-	var tileSource = '//tile.stamen.com/toner/{z}/{x}/{y}.png';
-	var mapStyle = _immutable2.default.fromJS((0, _rasterTileStyle2.default)([tileSource]));
+	//var tileSource = '//tile.stamen.com/toner/{z}/{x}/{y}.png';
+	//var mapStyle = Immutable.fromJS(rasterTileStyle([tileSource]));
 
-	var Heatmap = (_class = function (_React$Component) {
-	  _inherits(Heatmap, _React$Component);
+	var GlMap = (_class = function (_React$Component) {
+	  _inherits(GlMap, _React$Component);
 
-	  function Heatmap(props) {
-	    _classCallCheck(this, Heatmap);
+	  function GlMap(props) {
+	    _classCallCheck(this, GlMap);
 
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Heatmap).call(this, props));
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(GlMap).call(this, props));
 
 	    _this.state = {
 	      viewport: {
@@ -416,18 +416,19 @@ define(["react"], function(__WEBPACK_EXTERNAL_MODULE_7__) { return /******/ (fun
 	        latitude: props.latitude || 0,
 	        longitude: props.longitude || 0,
 	        zoom: props.zoom || 2,
+	        showZoomControls: props.showZoomControls || true,
 	        startDragLngLat: null,
-	        isDragging: false
+	        isDragging: null
 	      }
 	    };
 	    return _this;
 	  }
 
-	  _createClass(Heatmap, [{
+	  _createClass(GlMap, [{
 	    key: 'componentWillMount',
 	    value: function componentWillMount() {
 	      _dispatcher2.default.register(function (payload) {
-	        if (payload.actionType === 'heatmap_update') {
+	        if (payload.actionType === 'glmap_update') {
 	          //this.setState({ payload.data })
 	        }
 	      });
@@ -438,53 +439,63 @@ define(["react"], function(__WEBPACK_EXTERNAL_MODULE_7__) { return /******/ (fun
 	      if (this.props.onChangeViewport) {
 	        return this.props.onChangeViewport(opt);
 	      }
-	      this.setState({
-	        viewport: {
-	          latitude: opt.latitude,
-	          longitude: opt.longitude,
-	          zoom: opt.zoom,
-	          startDragLngLat: opt.startDragLngLat,
-	          isDragging: opt.isDragging
-	        }
+	      var viewport = _extends({}, this.state.viewport, {
+	        zoom: opt.zoom,
+	        latitude: opt.latitude,
+	        longitude: opt.longitude,
+	        startDragLngLat: opt.startDragLngLat,
+	        isDragging: opt.isDragging
 	      });
-	    }
-	  }, {
-	    key: 'buildLocations',
-	    value: function buildLocations(geojson) {
-	      return _immutable2.default.fromJS(geojson.features.map(function (f) {
-	        return f.geometry.coordinates;
-	      }));
+
+	      this.setState({ viewport: viewport });
 	    }
 	  }, {
 	    key: 'render',
 	    value: function render() {
-	      var viewport = _extends({}, this.state.viewport, this.props);
+	      var mapProps = _extends({}, this.state.viewport, { mapboxApiAccessToken: this.props.mapboxApiAccessToken });
+	      var layerProps = _extends({}, this.props.layerProps);
+	      var geojson = this.props.geojson;
 
-	      var locations = this.props.geojson ? this.buildLocations(this.props.geojson) : null;
+
+	      var points = void 0;
+	      var polygons = void 0;
+
+	      if (geojson) {
+	        switch (geojson.features[0].geometry.type) {
+	          case 'Point':
+	            points = _immutable2.default.fromJS(geojson.features.map(function (f) {
+	              return f.geometry.coordinates;
+	            }));
+	            break;
+	          case 'Polygon':
+	            polygons = _immutable2.default.fromJS(geojson);
+	            break;
+	        }
+	      }
 
 	      return _react2.default.createElement(
 	        'div',
-	        { style: { width: viewport.width, height: viewport.height } },
+	        { style: { width: mapProps.width, height: mapProps.height } },
 	        _react2.default.createElement(
 	          _reactMapGl2.default,
-	          _extends({}, viewport, {
+	          _extends({}, mapProps, {
 	            onChangeViewport: this._onChangeViewport }),
-	          _react2.default.createElement(_reactMapGl.ScatterplotOverlay, _extends({}, viewport, {
-	            locations: locations,
-	            dotRadius: 2,
-	            globalOpacity: .9,
-	            compositeOperation: 'screen',
-	            dotFill: '#1FBAD6',
+	          points && _react2.default.createElement(_reactMapGl.ScatterplotOverlay, _extends({}, mapProps, layerProps, {
+	            locations: points,
 	            renderWhileDragging: true
+	          })),
+	          polygons && _react2.default.createElement(_reactMapGl.ChoroplethOverlay, _extends({}, mapProps, layerProps, {
+	            renderWhileDragging: true,
+	            features: polygons.get('features')
 	          }))
 	        )
 	      );
 	    }
 	  }]);
 
-	  return Heatmap;
+	  return GlMap;
 	}(_react2.default.Component), (_applyDecoratedDescriptor(_class.prototype, '_onChangeViewport', [_autobindDecorator2.default], Object.getOwnPropertyDescriptor(_class.prototype, '_onChangeViewport'), _class.prototype)), _class);
-	exports.default = Heatmap;
+	exports.default = GlMap;
 	module.exports = exports['default'];
 
 /***/ },
