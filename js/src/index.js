@@ -1,14 +1,3 @@
-if (window.require) {
-    window.require.config({
-        map: {
-            "*" : {
-                "react": "https://fb.me/react-15.2.1.min.js",
-                "react-dom": "https://fb.me/react-dom-15.2.1.min.js"
-            }
-        }
-    });
-}
-
 import JupyterReact from 'jupyter-react-js';
 import components from './components'; 
 import dispatcher from './components/dispatcher';

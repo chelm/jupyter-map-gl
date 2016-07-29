@@ -44,7 +44,7 @@ define(["react"], function(__WEBPACK_EXTERNAL_MODULE_7__) { return /******/ (fun
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 
 	var _jupyterReactJs = __webpack_require__(1);
 
@@ -60,35 +60,24 @@ define(["react"], function(__WEBPACK_EXTERNAL_MODULE_7__) { return /******/ (fun
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	if (window.require) {
-	    window.require.config({
-	        map: {
-	            "*": {
-	                "react": "https://fb.me/react-15.2.1.min.js",
-	                "react-dom": "https://fb.me/react-dom-15.2.1.min.js"
-	            }
-	        }
-	    });
-	}
-
 	// An option component update method passed to every component
 	// when an update message is received over the comm, 
 	// components will dispatch an event to every other component 
 	var on_update = function on_update(module, props) {
-	    _dispatcher2.default.dispatch({
-	        actionType: module.toLowerCase() + '_update',
-	        data: props
-	    });
+	  _dispatcher2.default.dispatch({
+	    actionType: module.toLowerCase() + '_update',
+	    data: props
+	  });
 	};
 
 	function load_ipython_extension() {
-	    requirejs(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
-	        _jupyterReactJs2.default.init(Jupyter, events, 'react.gl', { components: _components2.default, on_update: on_update });
-	    });
+	  requirejs(["base/js/namespace", "base/js/events"], function (Jupyter, events) {
+	    _jupyterReactJs2.default.init(Jupyter, events, 'react.gl', { components: _components2.default, on_update: on_update });
+	  });
 	}
 
 	module.exports = {
-	    load_ipython_extension: load_ipython_extension
+	  load_ipython_extension: load_ipython_extension
 	};
 
 /***/ },
