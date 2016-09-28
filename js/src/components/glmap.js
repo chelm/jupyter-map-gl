@@ -5,14 +5,15 @@ import rasterTileStyle from 'raster-tile-style';
 import Immutable from 'immutable';
 import autobind from 'autobind-decorator';
 
-//var tileSource = '//tile.stamen.com/toner/{z}/{x}/{y}.png';
-//var mapStyle = Immutable.fromJS(rasterTileStyle([tileSource]));
-
 class GlMap extends React.Component {
 
   constructor( props ) {
     super( props );
     this.state = {
+      layerType: null,
+      features: null,
+      geojson: null,
+      mapStyle: null,
       viewport: {
         width: props.width || 500,
         height: props.height || 500,
@@ -26,12 +27,47 @@ class GlMap extends React.Component {
     };
   }
 
+  componentWillReceiveProps( newProps ) {
+    if ( this.state.features && newProps.geojson && this.state.features.size != newProps.geojson.features.length ){
+      this._updateFeatures( newProps.geojson );
+    }
+  }
+
   componentWillMount(){
+    if ( !this.state.features || this.state.features.size != this.props.geojson.features.length ){
+      this._updateFeatures( this.props.geojson );
+    }
+
+    if ( this.props.tileSource ) {
+      const source = this.props.accessToken ? this.props.tileSource + `?access_token=${this.props.accessToken}` : this.props.tileSource;
+      this.setState( { mapStyle: Immutable.fromJS(rasterTileStyle([source])) } );
+    }
+
     dispatcher.register( payload => {
       if ( payload.actionType === 'glmap_update' ) {
-        //this.setState({ payload.data })
+        if ( payload.data.feature ) {
+          const _geojson = this.state.geojson;
+          _geojson.features.push( payload.data.feature );
+          this._updateFeatures( _geojson );
+        }
       }
     } );
+  }
+
+  _updateFeatures( geojson ) {
+    let features;
+    let layerType;
+    switch ( geojson.features[0].geometry.type ) {
+      case 'Point':
+        features = Immutable.fromJS( geojson.features.map( f => f.geometry.coordinates ) );
+        layerType = 'Point';
+        break;
+      case 'Polygon':
+        features = Immutable.fromJS( geojson ).get('features');
+        layerType = 'Polygon';
+        break;
+    }
+    this.setState( { features, layerType, geojson } );
   }
 
   @autobind
@@ -54,39 +90,26 @@ class GlMap extends React.Component {
   render() {
     const mapProps = { ...this.state.viewport, mapboxApiAccessToken: this.props.mapboxApiAccessToken }
     const layerProps = { ...this.props.layerProps };
-    const { geojson } = this.props;
-
-    let points;
-    let polygons; 
-
-    if ( geojson ) { 
-      switch ( geojson.features[0].geometry.type ) {
-        case 'Point':
-          points = Immutable.fromJS( geojson.features.map( f => f.geometry.coordinates ) );
-          break;
-        case 'Polygon': 
-          polygons = Immutable.fromJS( geojson )
-          break; 
-      }
-    }
+    const { features, layerType, mapStyle } = this.state;
 
     return (
       <div style={{ width: mapProps.width, height: mapProps.height }}> 
         <MapGL 
-          { ...mapProps } 
+          { ...mapProps }
+          mapStyle={ mapStyle } 
           onChangeViewport={ this._onChangeViewport }>
-            { points && <ScatterplotOverlay
+            { layerType === 'Point' && <ScatterplotOverlay
                 { ...mapProps }
                 { ...layerProps }
-                locations={ points }
+                locations={ features }
                 renderWhileDragging={ true } 
               />
             }
-            { polygons && <ChoroplethOverlay
+            { layerType === 'Polygon' && <ChoroplethOverlay
                 { ...mapProps }
                 { ...layerProps }
-                renderWhileDragging={ true }
-                features={ polygons.get('features') }
+                renderWhileDragging={ false }
+                features={ features }
               />
             }
         </MapGL>

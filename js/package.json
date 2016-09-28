@@ -34,7 +34,7 @@
     "babel-preset-stage-1": "^6.5.0",
     "d3": "^4.1.1",
     "flux": "^2.1.1",
-    "jupyter-react-js": "^0.1.0",
+    "jupyter-react-js": "^0.3.0",
     "mapbox-gl": "^0.21.0",
     "raster-tile-style": "^1.0.1",
     "react": "^15.2.1",
