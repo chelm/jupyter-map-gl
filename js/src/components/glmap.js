@@ -27,20 +27,31 @@ class GlMap extends React.Component {
   }
 
   componentWillReceiveProps( newProps ) {
-    if ( this.state.layers && newProps.layers && this.state.layers.length != newProps.layers.length ){
+    if ( newProps.layers && this.state.layers.length != newProps.layers.length ){
       this._updateLayers( newProps.layers );
     }
+
+    if ( newProps.tileSource ) {
+      const { tileSource, width, height, latitude, longitude } = newProps
+      const source = newProps.accessToken ? newProps.tileSource + `?access_token=${newProps.accessToken}` : newProps.tileSource;
+      
+      this.setState( { 
+        viewport: { ...this.state.viewport, width, height, latitude, longitude }, 
+        mapStyle: Immutable.fromJS( rasterTileStyle( [ source ] ) ) 
+      } );
+    }
+    
   }
 
   componentWillMount(){
-    if ( !this.state.layers || this.state.layers !== this.props.layers.length ){
+    if ( this.props.layers && this.state.layers !== this.props.layers.length ) {
       this._updateLayers( this.props.layers );
     }
 
     if ( this.props.tileSource ) {
       const source = this.props.accessToken ? this.props.tileSource + `?access_token=${this.props.accessToken}` : this.props.tileSource;
       this.setState( { mapStyle: Immutable.fromJS(rasterTileStyle([source])) } );
-    }
+    } 
 
     dispatcher.register( payload => {
       if ( payload.actionType === 'glmap_update' ) {
@@ -93,7 +104,7 @@ class GlMap extends React.Component {
 
   buildLayers( layers, mapProps ) {
     return layers.map( layer => {
-      const layerProps = { ...mapProps, ...layer.props, features: layer.features };
+      const layerProps = { ...mapProps, ...layer.props, notify: this.notify_python, features: layer.features };
       if ( layer.type === 'footprint' ) {
         return <FootprintOverlay { ...layerProps } />;
       } else if ( layer.type === 'choropleth' ) {
@@ -102,6 +113,11 @@ class GlMap extends React.Component {
         return <ScatterplotOverlay { ...layerProps } features={ Immutable.fromJS( layer.features ) } />;
       }
     });
+  }
+
+  @autobind
+  notify_python( data ) {
+    this.props.comm.send({ method: "notify", data } );
   }
 
   render() {

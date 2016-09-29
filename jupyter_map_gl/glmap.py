@@ -2,6 +2,7 @@ from jupyter_react import Component
 
 class GlMap(Component):
     module = 'GlMap'
+    features = []
 
     def __init__(self, **kwargs):
         super(GlMap, self).__init__(target_name='react.gl', props=kwargs.get('props', {}))
@@ -16,4 +17,6 @@ class GlMap(Component):
         self.send({ "method": "update", "props": {"layerId": layer_id, "features": features}})
 
     def _handle_msg(self, msg):
-        print msg
+        data = msg['content']['data']
+        if data.get('method', '') == 'notify':
+            self.features = data.get('data', {}).get('features', [])

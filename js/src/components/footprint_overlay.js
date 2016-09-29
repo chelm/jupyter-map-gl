@@ -50,6 +50,7 @@ export default class FootprintOverlay extends Component {
       const { longitude, latitude, fill = '#1FBAD6', stroke = '#ffffff', strokeWidth = 1, zoom } = this.props;
       const bounds = this._getBounds( [ longitude, latitude ], width, height, project, unproject ) ;
       const points = this.tree.bbox( ...bounds );
+      this.props.notify({features: points || []});
       if ( points.length ) {
         ctx.strokeStyle = stroke;
         ctx.lineWidth = strokeWidth;
