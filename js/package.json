@@ -40,7 +40,8 @@
     "react": "^15.2.1",
     "react-dom": "^15.2.1",
     "react-hot-loader": "^1.3.0",
-    "react-map-gl": "^1.1.2",
+    "react-map-gl": "git+ssh://git@github.com:chelm/react-map-gl.git",
+    "rtree": "^1.4.2",
     "transform-loader": "^0.2.3",
     "webworkify": "^1.3.0",
     "webworkify-webpack": "^1.1.5"

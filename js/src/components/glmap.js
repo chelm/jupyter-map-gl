@@ -1,5 +1,6 @@
 import React from 'react';
 import MapGL, {ScatterplotOverlay, ChoroplethOverlay} from 'react-map-gl';
+import FootprintOverlay from './footprint_overlay';
 import dispatcher from './dispatcher.js';
 import rasterTileStyle from 'raster-tile-style';
 import Immutable from 'immutable';
@@ -10,10 +11,8 @@ class GlMap extends React.Component {
   constructor( props ) {
     super( props );
     this.state = {
-      layerType: null,
-      features: null,
-      geojson: null,
       mapStyle: null,
+      layers: props.layers || [],
       viewport: {
         width: props.width || 500,
         height: props.height || 500,
@@ -28,14 +27,14 @@ class GlMap extends React.Component {
   }
 
   componentWillReceiveProps( newProps ) {
-    if ( this.state.features && newProps.geojson && this.state.features.size != newProps.geojson.features.length ){
-      this._updateFeatures( newProps.geojson );
+    if ( this.state.layers && newProps.layers && this.state.layers.length != newProps.layers.length ){
+      this._updateLayers( newProps.layers );
     }
   }
 
   componentWillMount(){
-    if ( !this.state.features || this.state.features.size != this.props.geojson.features.length ){
-      this._updateFeatures( this.props.geojson );
+    if ( !this.state.layers || this.state.layers !== this.props.layers.length ){
+      this._updateLayers( this.props.layers );
     }
 
     if ( this.props.tileSource ) {
@@ -45,29 +44,34 @@ class GlMap extends React.Component {
 
     dispatcher.register( payload => {
       if ( payload.actionType === 'glmap_update' ) {
-        if ( payload.data.feature ) {
-          const _geojson = this.state.geojson;
-          _geojson.features.push( payload.data.feature );
-          this._updateFeatures( _geojson );
+        const { data = {} } = payload;
+        if ( data.features && data.layerId ) {
+          this._updateFeatures( data.layerId, data.features );
+        } else if ( data.layers ) { 
+          this._updateLayers( data.layers );
         }
       }
     } );
   }
 
-  _updateFeatures( geojson ) {
-    let features;
-    let layerType;
-    switch ( geojson.features[0].geometry.type ) {
-      case 'Point':
-        features = Immutable.fromJS( geojson.features.map( f => f.geometry.coordinates ) );
-        layerType = 'Point';
-        break;
-      case 'Polygon':
-        features = Immutable.fromJS( geojson ).get('features');
-        layerType = 'Polygon';
-        break;
-    }
-    this.setState( { features, layerType, geojson } );
+  _updateFeatures( layerId, newFeatures ) {
+    // find layer and set features... then set state
+    const _layers = [ ...this.state.layers ];
+    // prob dont need foreach, find would work
+    _layers.forEach( layer => { 
+      if ( layer.id === layerId ) {
+        layer.features = layer.features.concat( newFeatures );  
+      }
+    }); 
+    this.setState( { layers: [ ..._layers ] } );
+  }
+
+  _updateLayers( layers ){
+    const _layers = layers.map( layer => {
+      layer.features = layer.geojson.features;
+      return layer;
+    });
+    this.setState( { layers: _layers } );
   }
 
   @autobind
@@ -87,31 +91,28 @@ class GlMap extends React.Component {
     this.setState( { viewport } );
   }
 
+  buildLayers( layers, mapProps ) {
+    return layers.map( layer => {
+      const layerProps = { ...mapProps, ...layer.props, features: layer.features };
+      if ( layer.type === 'footprint' ) {
+        return <FootprintOverlay { ...layerProps } />;
+      } else if ( layer.type === 'choropleth' ) {
+        return <ChoroplethOverlay { ...layerProps } features={ Immutable.fromJS( layer.features.map( f => f.geometry.coordinates ) ) } />;
+      } else if ( layer.type === 'scatter' ) {
+        return <ScatterplotOverlay { ...layerProps } features={ Immutable.fromJS( layer.features ) } />;
+      }
+    });
+  }
+
   render() {
-    const mapProps = { ...this.state.viewport, mapboxApiAccessToken: this.props.mapboxApiAccessToken }
-    const layerProps = { ...this.props.layerProps };
-    const { features, layerType, mapStyle } = this.state;
+    const mapProps = { ...this.state.viewport, mapboxApiAccessToken: this.props.mapboxApiAccessToken };
+    const { width, height } = this.state.viewport;
+    const { mapStyle, layers } = this.state;
 
     return (
-      <div style={{ width: mapProps.width, height: mapProps.height }}> 
-        <MapGL 
-          { ...mapProps }
-          mapStyle={ mapStyle } 
-          onChangeViewport={ this._onChangeViewport }>
-            { layerType === 'Point' && <ScatterplotOverlay
-                { ...mapProps }
-                { ...layerProps }
-                locations={ features }
-                renderWhileDragging={ true } 
-              />
-            }
-            { layerType === 'Polygon' && <ChoroplethOverlay
-                { ...mapProps }
-                { ...layerProps }
-                renderWhileDragging={ false }
-                features={ features }
-              />
-            }
+      <div style={{ width, height }}> 
+        <MapGL { ...mapProps } mapStyle={ mapStyle } onChangeViewport={ this._onChangeViewport }>
+          { this.buildLayers( layers, mapProps ) }
         </MapGL>
       </div>
     );
