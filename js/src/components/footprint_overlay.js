@@ -1,5 +1,6 @@
 import React, {PropTypes, Component} from 'react';
 import rtree from 'rtree';
+import tilebelt from 'tilebelt';
 import autobind from 'autobind-decorator';
 
 import { CanvasOverlay } from 'react-map-gl';
@@ -8,9 +9,9 @@ export default class FootprintOverlay extends Component {
 
   tree: null
 
-  constructor(props) {
-    super(props);
-    this.tree = rtree(9);
+  constructor( props ) {
+    super( props );
+    this.tree = rtree( 9 );
     this.state = {
     };
   }
@@ -50,32 +51,71 @@ export default class FootprintOverlay extends Component {
       const { longitude, latitude, fill = '#1FBAD6', stroke = '#ffffff', strokeWidth = 1, zoom } = this.props;
       const bounds = this._getBounds( [ longitude, latitude ], width, height, project, unproject ) ;
       const points = this.tree.bbox( ...bounds );
-      this.props.notify({features: points || []});
       if ( points.length ) {
         ctx.strokeStyle = stroke;
         ctx.lineWidth = strokeWidth;
         ctx.fillStyle = fill;
+        let tiles = [];
         points.forEach( pnt => {
-          this._renderGeom( pnt, ctx, zoom, project );
+          tiles = tiles.concat( this._renderGeom( pnt, ctx, zoom, project, width, height ) );
         });
+        this.props.notify( { features: tiles } );
+      } else {
+        this.props.notify( { features: [] } );
       }
     }
   }
 
-  _renderGeom( loc, ctx, zoom, project ) {
-    if ( Math.floor( zoom ) < 5 ) {
-      const px = project( loc.geometry.coordinates );
-      ctx.beginPath();
-      ctx.arc(px[0], px[1], Math.max(3, Math.floor( zoom * .75 )), 0, 2 * Math.PI);
-      ctx.fill();
-    } else {
-      // render footprint // ctx.fillRect(25,25,100,100);
-      const ul = project( [ loc.properties.bounds[0], loc.properties.bounds[3] ] );
-      const lr = project( [ loc.properties.bounds[2], loc.properties.bounds[1] ] );
-      ctx.beginPath();
-      ctx.rect(ul[0], ul[1], lr[0] - ul[0], ul[1] - lr[1]);
-      ctx.stroke();
+  _bboxToTiles( bbox, zoom ) {
+    const tiles = [];
+    const ll = tilebelt.pointToTile( bbox[0], bbox[1], zoom );
+    const ur = tilebelt.pointToTile( bbox[2], bbox[3], zoom );
+    
+    for ( let i = ll[0]; i < Math.min(ur[ 0 ], 2**zoom); i++ ) {
+      for ( let j = ur[1]; j < Math.min(ll[ 1 ], 2**zoom); j++ ) {
+        tiles.push( [ i, j, zoom ] );
+      }
     }
+    return tiles;
+  }
+
+  _renderBox( ctx, bbox, project, width, height ) {
+    const ul = project( [ bbox[0], bbox[3] ] );
+    const lr = project( [ bbox[2], bbox[1] ] );
+    const buf = -50.0;
+    const shouldDraw = ( ul[0] > buf && ul[0] < width + Math.abs( buf ) ) && ( ul[1] > buf && ul[1] < height + Math.abs( buf ) ) 
+      //&& ( lr[0] < width + (buf * -1) && lr[0] < buf );
+    if ( shouldDraw ) {
+      ctx.beginPath();
+      ctx.rect(ul[0], ul[1], lr[0] - ul[0], lr[1] - ul[1]);
+      ctx.stroke();
+    } 
+    return shouldDraw;
+  }
+
+  @autobind
+  _renderGeom( loc, ctx, zoom, project, width, height ) {
+    const tileSet = [];
+    if ( Math.floor( zoom ) < 5 ) {
+      const px = project( loc.properties.center.coordinates );
+      ctx.beginPath();
+      ctx.arc( px[0], px[1], Math.max(3, Math.floor( zoom * .75 )), 0, 2 * Math.PI );
+      ctx.fill();
+    } else if ( Math.floor( zoom ) <= 8 ){
+      this._renderBox( ctx, loc.properties.bounds, project, width, height );
+    } else if ( Math.floor( zoom ) > 8 ) {
+      const tiles = this._bboxToTiles( loc.properties.bounds, 14 );
+      tiles.forEach( tile => {
+        const bbox = tilebelt.tileToBBOX( tile );
+        const _drawn = this._renderBox( ctx, bbox, project, width, height );
+        if ( _drawn ) {
+          loc.properties.zxy = tile;
+          loc.properties.bounds = bbox;
+          tileSet.push( loc );
+        }
+      });
+    }
+    return tileSet;
   }
 
   render() {
