@@ -1,6 +1,5 @@
 import JupyterReact from 'jupyter-react-js';
-import components from './components'; 
-import dispatcher from './components/dispatcher';
+import components from 'jupyter-glmap-components'; 
 import react from 'react';
 import reactDom from 'react-dom';
 
@@ -8,7 +7,7 @@ import reactDom from 'react-dom';
 // when an update message is received over the comm, 
 // components will dispatch an event to every other component 
 const on_update = ( module, props ) => {
-  dispatcher.dispatch({
+  components.dispatcher.dispatch({
     actionType: module.toLowerCase() + '_update',
     data: props 
   });

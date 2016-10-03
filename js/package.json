@@ -21,7 +21,9 @@
     "json-loader": "^0.5.4",
     "jsx-loader": "^0.13.2",
     "style-loader": "^0.13.1",
-    "webpack": "^1.12.14"
+    "webpack": "^1.12.14",
+    "react-hot-loader": "^1.3.0",
+    "transform-loader": "^0.2.3"
   },
   "dependencies": {
     "autobind-decorator": "^1.3.3",
@@ -32,19 +34,10 @@
     "babel-preset-es2015": "^6.9.0",
     "babel-preset-react": "^6.11.1",
     "babel-preset-stage-1": "^6.5.0",
-    "d3": "^4.1.1",
     "flux": "^2.1.1",
     "jupyter-react-js": "^0.4.0",
-    "mapbox-gl": "^0.21.0",
-    "raster-tile-style": "^1.0.1",
     "react": "^15.3.2",
     "react-dom": "^15.3.2",
-    "react-hot-loader": "^1.3.0",
-    "react-map-gl": "^1.6.1",
-    "rtree": "^1.4.2",
-    "tilebelt": "^1.0.1",
-    "transform-loader": "^0.2.3",
-    "webworkify": "^1.3.0",
-    "webworkify-webpack": "^1.1.5"
+    "jupyter-glmap-components": "^0.0.1"
   }
 }

@@ -1,3 +1,4 @@
+var webpack = require('webpack');
 var version = require('./package.json').version;
 var path = require( 'path' );
 
@@ -18,31 +19,21 @@ module.exports = [
       output: {
           filename: 'index.js',
           path: '../jupyter_map_gl/static',
-          libraryTarget: 'umd'
+          libraryTarget: 'amd'
       },
-      resolve: {
-        extensions: ['', '.js'],
-        alias: {
-          webworkify: 'webworkify-webpack',
-          'mapbox-gl': path.resolve('./node_modules/mapbox-gl') //dist/mapbox-gl.js')
-        }
-      },
-      //externals: [{'react': 'react'}],
+      plugins:[
+        new webpack.DefinePlugin({
+          'process.env':{
+            'NODE_ENV': JSON.stringify('production')
+          }
+        })
+      ],
       module : {
         loaders : [
           {
             test: /\.js?$/,
             exclude: /(node_modules|bower_components)/,
             loaders: [`babel?${JSON.stringify( babelSettings )}`]
-          },
-          {
-            test: /\.js$/,
-            include: path.resolve(__dirname, 'node_modules/webworkify/index.js'),
-            loader: 'worker'
-          },
-          {
-            test: /mapbox-gl.+\.js$/,
-            loader: 'transform/cacheable?brfs'
           },
           { 
             test: /\.css$/, loader: "style-loader!css-loader" 
