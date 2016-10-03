@@ -23,7 +23,7 @@ class install(_install):
 
 setup(name='jupyter-map-gl',
       cmdclass={'develop': develop, 'install': install},
-      version='0.2.0',
+      version='0.2.1',
       description='A wrapper around react-map-gl components for use in jupyter notebooks',
       url='https://bitbucket.com/timbr-io/jupyter-map-gl',
       author='Chris Helm',

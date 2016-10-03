@@ -13,7 +13,7 @@
     "ipython"
   ],
   "scripts": {
-    "prepublish": "webpack",
+    "prepublish": "webpack -p",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
