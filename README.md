@@ -6,7 +6,14 @@ Showcases the use of: https://github.com/timbr-io/jupyter-react-js and https://g
 
 <img src="./resources/map.gif" />
 
-Example usage 
+## Install
+
+```bash
+pip install jupyter-map-gl
+jupyter nbextension enable --py jupyter_map_gl
+```
+
+## Example usage 
 
 ```python
 

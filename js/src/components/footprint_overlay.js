@@ -105,7 +105,7 @@ export default class FootprintOverlay extends Component {
     } else if ( Math.floor( zoom ) <= 8 ){
       this._renderBox( ctx, loc.properties.bounds, project, width, height );
     } else if ( Math.floor( zoom ) > 8 ) {
-      const tiles = this._bboxToTiles( loc.properties.bounds, 14 );
+      const tiles = this._bboxToTiles( loc.properties.bounds, 15 );
       tiles.forEach( tile => {
         const bbox = tilebelt.tileToBBOX( tile );
         const _drawn = this._renderBox( ctx, bbox, project, width, height );
