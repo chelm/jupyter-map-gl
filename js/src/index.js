@@ -1,6 +1,8 @@
 import JupyterReact from 'jupyter-react-js';
 import components from './components'; 
 import dispatcher from './components/dispatcher';
+import react from 'react';
+import reactDom from 'react-dom';
 
 // An option component update method passed to every component
 // when an update message is received over the comm, 
@@ -17,7 +19,7 @@ function load_ipython_extension () {
       "base/js/namespace",
       "base/js/events",
   ], function( Jupyter, events ) {
-      JupyterReact.init( Jupyter, events, 'react.gl', { components, on_update } );
+      JupyterReact.init( Jupyter, events, 'react.gl', { components, on_update, save: false, react, reactDom } );
   });
 }
 

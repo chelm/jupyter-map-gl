@@ -57,7 +57,8 @@ export default class FootprintOverlay extends Component {
         ctx.fillStyle = fill;
         let tiles = [];
         points.forEach( pnt => {
-          tiles = tiles.concat( this._renderGeom( pnt, ctx, zoom, project, width, height ) );
+          const pntTiles = this._renderGeom( pnt, ctx, zoom, project, width, height );
+          pntTiles.forEach( pTile => tiles.push( pTile ) )
         });
         this.props.notify( { features: tiles } );
       } else {
@@ -109,9 +110,8 @@ export default class FootprintOverlay extends Component {
         const bbox = tilebelt.tileToBBOX( tile );
         const _drawn = this._renderBox( ctx, bbox, project, width, height );
         if ( _drawn ) {
-          loc.properties.zxy = tile;
-          loc.properties.bounds = bbox;
-          tileSet.push( loc );
+          const _loc = { ...loc, properties: { ...loc.properties, zxy: tile, bounds: bbox } };
+          tileSet.push( _loc ); 
         }
       });
     }
@@ -120,7 +120,7 @@ export default class FootprintOverlay extends Component {
 
   render() {
     return (
-      <CanvasOverlay { ...this.props } redraw={ this._redraw } />
+      <CanvasOverlay key={ 'canvas' } { ...this.props } isDragging={ false } redraw={ this._redraw } />
     );
   }
 

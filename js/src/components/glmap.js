@@ -103,14 +103,14 @@ class GlMap extends React.Component {
   }
 
   buildLayers( layers, mapProps ) {
-    return layers.map( layer => {
+    return layers.map( ( layer, i ) => {
       const layerProps = { ...mapProps, ...layer.props, notify: this.notify_python, features: layer.features };
       if ( layer.type === 'footprint' ) {
-        return <FootprintOverlay { ...layerProps } />;
+        return <FootprintOverlay key={i} { ...layerProps } />;
       } else if ( layer.type === 'choropleth' ) {
-        return <ChoroplethOverlay { ...layerProps } features={ Immutable.fromJS( layer.features.map( f => f.geometry.coordinates ) ) } />;
+        return <ChoroplethOverlay key={i} { ...layerProps } features={ Immutable.fromJS( layer.features.map( f => f.geometry.coordinates ) ) } />;
       } else if ( layer.type === 'scatter' ) {
-        return <ScatterplotOverlay { ...layerProps } features={ Immutable.fromJS( layer.features ) } />;
+        return <ScatterplotOverlay key={i} { ...layerProps } features={ Immutable.fromJS( layer.features ) } />;
       }
     });
   }
